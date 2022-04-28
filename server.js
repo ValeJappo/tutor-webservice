@@ -124,7 +124,7 @@ router.get( "/", function ( req, res ) {
 	}
 });
 
-router.get( "reassign", function ( req, res ) {
+router.get( "/reassign", function ( req, res ) {
 	if (searchParams(req).has("wiki")){
 		if (wikis.includes(searchParams(req).get("wiki"))){
 			try{
@@ -149,7 +149,7 @@ router.get( "reassign", function ( req, res ) {
 	}
 });
 
-router.post( "reassign", function ( req, res ) {
+router.post( "/reassign", function ( req, res ) {
 	try{
 				var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
 		} catch (e) {
