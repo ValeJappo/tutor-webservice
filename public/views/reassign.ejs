@@ -1,0 +1,31 @@
+<!-- views/index.ejs -->
+<meta charset="UTF-8">
+
+<title>BOTutor - Riassegna</title>
+<h3>Riassegnazione automatica degli allievi di un tutor</h3>
+<p>Loggato come <%= user.displayName %>. <a href="/">Home</a> <a href="/logout">Logout</a></p>
+
+<input type="text" title="target" class="form-control" id="target" placeholder="Nome utente del tutor">
+<button type="submit" class="btn btn-default" id="submit">Riassegna allievi</button>
+<p id="status"></p>
+<script>
+	document.getElementById("submit").addEventListener("click", function() {
+		var http = new XMLHttpRequest();
+		var target=document.getElementById("target").value;
+		var url = 'reassign';
+		var params = 'target='+target;
+		http.open('POST', url, true);
+
+		//Send the proper header information along with the request
+		http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+		http.onreadystatechange = function() {//Call a function when the state changes.
+		    if(http.readyState == 4 && http.status == 200) {
+			document.getElementById("status").innerHTML="<p>La richiesta è stata inoltrata ed accettata. D'ora in poi il bot se ne occuperà, è possibile chiudiere questa pagina.</p><p><b>Assicurarsi che l'azione si esegua correttamente controllando <a href=\"https://it.wikipedia.org/wiki/Speciale:Registri?type=growthexperiments&user=BOTutor&page=&wpdate=&tagfilter=&subtype=setmentor\" target=\"new\">i registri</a>.</b></p><p>Utente target: "+target+".</p>";
+			document.getElementById("target").value="";
+		    }
+		}
+	http.send(params);
+	document.getElementById("status").innerHTML="<b>Riassegnazione degli allievi di "+target+" in corso... Attendere.</b>"
+	});  
+</script>
