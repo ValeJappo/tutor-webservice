@@ -39,21 +39,23 @@ function searchParams(req){
 }
 
 const wikis = ['it', 'test'];
+const mentorLists = {'it': 'Progetto:Coordinamento/Accoglienza/Growth', 'test': 'Wikipedia:Requests/Help_desk/Mentors'}
 
-var mentors = null
-https.get('https://it.wikipedia.org/w/api.php?action=query&format=json&prop=links&titles=Progetto:Coordinamento/Accoglienza/Growth&plnamespace=2&pllimit=500', res => {
-       let data = [];
-       const headerDate = res.headers && res.headers.date ? res.headers.date : 'no response date';
+function getMentors(req, done){
+	https.get('https://'+searchParams(req).get("wiki")+'.wikipedia.org/w/api.php?action=query&format=json&prop=links&titles='+mentorLists[searchParams(req).get("wiki")]+'&plnamespace=2&pllimit=500', res => {
+		let data = [];
+		const headerDate = res.headers && res.headers.date ? res.headers.date : 'no response date';
 
-        res.on('data', chunk => {
-        	data.push(chunk);
-        });
+		res.on('data', chunk => {
+			data.push(chunk);
+		});
 
-       	res.on('end', () => {
-		mentors=data.toString();
-		console.log(mentors);
+		res.on('end', () => {
+			done(data.toString());
+		});
+
 	});
-});
+}
 
 app.set( "views", __dirname + "/public/views" );
 app.set( "view engine", "ejs" );
@@ -99,7 +101,10 @@ passport.deserializeUser( function ( obj, done ) {
 
 router.get( "/", function ( req, res ) {
 	try{
-		var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+		var isMentor=null
+		getMentors(req, function(mentors){
+			isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+		});
 	} catch (e) {
 		if (e instanceof TypeError || e instanceof ReferenceError){ 
 			var isMentor=false;
@@ -128,7 +133,10 @@ router.get( "/reassign", function ( req, res ) {
 	if (searchParams(req).has("wiki")){
 		if (wikis.includes(searchParams(req).get("wiki"))){
 			try{
-					var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+				var isMentor=null
+				getMentors(req, function(mentors){
+					isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+				});
 			} catch (e) {
 					if (e instanceof TypeError || e instanceof ReferenceError){
 							var isMentor=false;
@@ -151,8 +159,11 @@ router.get( "/reassign", function ( req, res ) {
 
 router.post( "/reassign", function ( req, res ) {
 	try{
-				var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
-		} catch (e) {
+		var isMentor=null
+		getMentors(req, function(mentors){
+			isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+		});
+	} catch (e) {
 				if (e instanceof TypeError || e instanceof ReferenceError){
 						var isMentor=false;
 				} else { throw (e); }
