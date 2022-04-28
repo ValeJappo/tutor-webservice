@@ -1,7 +1,31 @@
 <!-- views/index.ejs -->
 <meta charset="UTF-8">
 <title>BOTutor</title>
-<h3>Servizio web per la gestione di <a href="https://it.wikipedia.org/wiki/Utente:BOTutor">BOTutor</a></h3>
-<ul>
-    <li><a href="/it">itwiki</a></li>
-</ul>
+<% if (wiki) { %>
+    <h3>Servizio web per la gestione di <a href="https://it.wikipedia.org/wiki/Utente:BOTutor">BOTutor</a></h3>
+    <% if(user && tutor) { %>
+        <p>Benvenuto/a, tutor <%= user.displayName %>! <a href="<%= url %>/logout">Logout</a></p>
+    <% }else if (user && !tutor){ %>
+        <p>Benvenuto/a, <%= user.displayName %>. <b>(NON tutor)</b> <a href="<%= url %>/logout">Logout</a></p>
+    <% } else { %>
+        <p>Benvenuto/a. <a href="<%= url %>/login">Premi qui per effettuare il login.</a></p>
+    <% } %>
+
+    <ul>
+        <% if(user && tutor){ %>
+            <li><a href="<%= wiki %>/reassign">Riassegnazione automatica degli allievi di un tutor</a></li>
+        <% }else if (user && !tutor){ %>
+            <li><i>Non risulti essere un tutor. Alcune funzionalità sono state nascoste</i></li>
+        <% } else { %>
+
+        <% } %>
+    </ul>
+<% }else{ %>
+    <h3>BOTutor</h3>
+    <p>Select your wiki</p>
+    <ol>
+        <li>
+            <a href="index?wiki=it">itwiki</a>
+        </li>
+    </ol>
+<% } %>

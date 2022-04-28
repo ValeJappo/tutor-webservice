@@ -27,9 +27,16 @@ var config = require( "./config" );
 var https = require("https");
 const { exec } = require("child_process");
 const bodyParser = require("body-parser");
+const url = require('url');
 
 var app = express();
 var router = express.Router();
+
+function searchParams(req){
+	const current_url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl)
+	const search_params = current_url.searchParams;
+	return search_params;
+}
 
 const wikis = ['it', 'test'];
 
@@ -98,23 +105,27 @@ router.get( "/", function ( req, res ) {
 			var isMentor=false;
 		} else { throw (e); }
 	}
-	res.render( "index", {
-		user: req && req.session && req.session.user,
-		tutor: isMentor,
-		url: req.baseUrl
+	if (!searchParams(req).has("wiki")){
+		if (wikis.includes(searchParams(req).get("wiki"))){
+			res.render( "home", {
+				user: req && req.session && req.session.user,
+				tutor: isMentor,
+				url: req.baseUrl,
+				wiki: searchParams(req).get("wiki")
+			} );
+		}
+	}
+
+	res.render( +"index", {
+			user: req && req.session && req.session.user,
+			tutor: isMentor,
+			url: req.baseUrl
 	} );
 });
 
-for (i=0; i<wikis.length(); i++){
-	wiki=wikis[i]
-	res.render( wiki+"/home", {
-			user: req && req.session && req.session.user,
-			tutor: isMentor,
-			url: req.baseUrl,
-			wiki: wiki
-	} );
-
-	router.get( wiki+"/reassign", function ( req, res ) {
+router.get( "reassign", function ( req, res ) {
+	if (searchParams(req).has("wiki")){
+		if (wikis.includes(searchParams(req).get("wiki"))){
 			try{
 					var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
 			} catch (e) {
@@ -123,33 +134,34 @@ for (i=0; i<wikis.length(); i++){
 					}else { throw (e); }
 			}
 
-		if(!(req && req.session && req.session.user)){
-			res.redirect( req.baseUrl + "/oauth-callback" );
-		} else if (req && req.session && req.session.user) {
-				res.render( "reassign", {
-					user: req && req.session && req.session.user,
-						tutor: isMentor,
-						url: req.baseUrl,
-						wiki: wiki
-				} );
-		}
-	});
-
-	router.post( wiki+"/reassign", function ( req, res ) {
-		try{
-					var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
-			} catch (e) {
-					if (e instanceof TypeError || e instanceof ReferenceError){
-							var isMentor=false;
-					} else { throw (e); }
+			if(!(req && req.session && req.session.user)){
+				res.redirect( req.baseUrl + "/oauth-callback" );
+			} else if (req && req.session && req.session.user) {
+					res.render( "reassign", {
+						user: req && req.session && req.session.user,
+							tutor: isMentor,
+							url: req.baseUrl,
+							wiki: searchParams(req).get("wiki")
+					} );
 			}
+		}
+	}
+});
 
-		if (req && req.session && req.session.user && isMentor){
-			exec("cd && sh reassign.sh \""+wiki+"\" \""+req.session.user.displayName+"\" \""+req.body.target+"\"")
-			res.send("ok");
-		} else {  res.status(403).send("Accesso negato. Permessi insufficienti."); }
-	} );
-}
+router.post( "reassign", function ( req, res ) {
+	try{
+				var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+		} catch (e) {
+				if (e instanceof TypeError || e instanceof ReferenceError){
+						var isMentor=false;
+				} else { throw (e); }
+		}
+
+	if (req && req.session && req.session.user && isMentor){
+		exec("cd && sh reassign.sh \""+req.body.wiki+"\" \""+req.session.user.displayName+"\" \""+req.body.target+"\"")
+		res.send("ok");
+	} else {  res.status(403).send("Accesso negato. Permessi insufficienti."); }
+} );
 
 router.get( "/login", function ( req, res ) {
 	res.redirect( req.baseUrl + "/oauth-callback" );
