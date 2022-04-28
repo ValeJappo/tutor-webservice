@@ -107,20 +107,21 @@ router.get( "/", function ( req, res ) {
 	}
 	if (!searchParams(req).has("wiki")){
 		if (wikis.includes(searchParams(req).get("wiki"))){
-			res.render( "home", {
+			res.render( "index", {
 				user: req && req.session && req.session.user,
 				tutor: isMentor,
 				url: req.baseUrl,
 				wiki: searchParams(req).get("wiki")
 			} );
 		}
+	}	else 	{
+		res.render( "index", {
+				user: req && req.session && req.session.user,
+				tutor: isMentor,
+				url: req.baseUrl,
+				wiki: false
+		} );
 	}
-
-	res.render( "index", {
-			user: req && req.session && req.session.user,
-			tutor: isMentor,
-			url: req.baseUrl
-	} );
 });
 
 router.get( "reassign", function ( req, res ) {
