@@ -13,7 +13,7 @@
 		var http = new XMLHttpRequest();
 		var target=document.getElementById("target").value;
 		var url = 'reassign';
-		var params = 'target='+target;
+		var params = 'target='+target+"&wiki="+<%= wiki %>;
 		http.open('POST', url, true);
 
 		//Send the proper header information along with the request

@@ -8,12 +8,12 @@
     <% }else if (user && !tutor){ %>
         <p>Benvenuto/a, <%= user.displayName %>. <b>(NON tutor)</b> <a href="<%= url %>/logout">Logout</a></p>
     <% } else { %>
-        <p>Benvenuto/a. <a href="<%= url %>/login">Premi qui per effettuare il login.</a></p>
+        <p>Benvenuto/a. <a href="<%= url %>/login?wiki=<%= wiki %>">Premi qui per effettuare il login.</a></p>
     <% } %>
 
     <ul>
         <% if(user && tutor){ %>
-            <li><a href="<%= wiki %>/reassign">Riassegnazione automatica degli allievi di un tutor</a></li>
+            <li><a href="/reassign?wiki=<%= wiki %>">Riassegnazione automatica degli allievi di un tutor</a></li>
         <% }else if (user && !tutor){ %>
             <li><i>Non risulti essere un tutor. Alcune funzionalità sono state nascoste</i></li>
         <% } else { %>
