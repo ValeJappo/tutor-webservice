@@ -116,7 +116,7 @@ router.get( "/", function ( req, res ) {
 		}
 	}
 
-	res.render( +"index", {
+	res.render( "index", {
 			user: req && req.session && req.session.user,
 			tutor: isMentor,
 			url: req.baseUrl
