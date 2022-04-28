@@ -105,7 +105,7 @@ router.get( "/", function ( req, res ) {
 			var isMentor=false;
 		} else { throw (e); }
 	}
-	if (!searchParams(req).has("wiki")){
+	if (searchParams(req).has("wiki")){
 		if (wikis.includes(searchParams(req).get("wiki"))){
 			res.render( "index", {
 				user: req && req.session && req.session.user,
