@@ -31,6 +31,8 @@ const bodyParser = require("body-parser");
 var app = express();
 var router = express.Router();
 
+const wikis = ['it', 'test'];
+
 var mentors = null
 https.get('https://it.wikipedia.org/w/api.php?action=query&format=json&prop=links&titles=Progetto:Coordinamento/Accoglienza/Growth&plnamespace=2&pllimit=500', res => {
        let data = [];
@@ -96,7 +98,6 @@ router.get( "/", function ( req, res ) {
 			var isMentor=false;
 		} else { throw (e); }
 	}
-
 	res.render( "index", {
 		user: req && req.session && req.session.user,
 		tutor: isMentor,
@@ -104,40 +105,51 @@ router.get( "/", function ( req, res ) {
 	} );
 });
 
-router.get( "/reassign", function ( req, res ) {
-        try{
-                var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
-        } catch (e) {
-                if (e instanceof TypeError || e instanceof ReferenceError){
-                        var isMentor=false;
-                }else { throw (e); }
-        }
+for (i=0; i<wikis.length(); i++){
+	wiki=wikis[i]
+	res.render( wiki+"/home", {
+			user: req && req.session && req.session.user,
+			tutor: isMentor,
+			url: req.baseUrl,
+			wiki: wiki
+	} );
 
-	if(!(req && req.session && req.session.user)){
-		res.redirect( req.baseUrl + "/oauth-callback" );
-	} else if (req && req.session && req.session.user) {
-	        res.render( "reassign", {
-       			user: req && req.session && req.session.user,
-                	tutor: isMentor,
-                	url: req.baseUrl
-        	} );
-	}
-});
+	router.get( wiki+"/reassign", function ( req, res ) {
+			try{
+					var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+			} catch (e) {
+					if (e instanceof TypeError || e instanceof ReferenceError){
+							var isMentor=false;
+					}else { throw (e); }
+			}
 
-router.post( "/reassign", function ( req, res ) {
-	try{
-                var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
-        } catch (e) {
-                if (e instanceof TypeError || e instanceof ReferenceError){
-                        var isMentor=false;
-                } else { throw (e); }
-    	}
+		if(!(req && req.session && req.session.user)){
+			res.redirect( req.baseUrl + "/oauth-callback" );
+		} else if (req && req.session && req.session.user) {
+				res.render( "reassign", {
+					user: req && req.session && req.session.user,
+						tutor: isMentor,
+						url: req.baseUrl,
+						wiki: wiki
+				} );
+		}
+	});
 
-	if (req && req.session && req.session.user && isMentor){
-		exec("cd && sh reassign.sh \""+req.session.user.displayName+"\" \""+req.body.target+"\"")
-		res.send("ok");
-	} else {  res.status(403).send("Accesso negato. Permessi insufficienti."); }
-} );
+	router.post( wiki+"/reassign", function ( req, res ) {
+		try{
+					var isMentor=mentors.toString().includes("\"Utente:"+req.session.user.displayName.toString()+"\"");
+			} catch (e) {
+					if (e instanceof TypeError || e instanceof ReferenceError){
+							var isMentor=false;
+					} else { throw (e); }
+			}
+
+		if (req && req.session && req.session.user && isMentor){
+			exec("cd && sh reassign.sh \""+wiki+"\" \""+req.session.user.displayName+"\" \""+req.body.target+"\"")
+			res.send("ok");
+		} else {  res.status(403).send("Accesso negato. Permessi insufficienti."); }
+	} );
+}
 
 router.get( "/login", function ( req, res ) {
 	res.redirect( req.baseUrl + "/oauth-callback" );
